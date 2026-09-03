@@ -68,7 +68,7 @@ function Produtos() {
     };
   };
 
-  function SalvarEdicao() {
+  /* function SalvarEdicao() {
     setUsuarios(
       usuarios.map((usuario) => {
         if (usuario.id === edicao) {
@@ -85,7 +85,27 @@ function Produtos() {
     setEdicao(null);
     setName("");
     setEmail("");
-  };
+  }; */
+
+  async function SalvarEdicao() {
+    const resposta = await fetch(`https://jsonplaceholder.typicode.com/users?${edicao}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+      }),
+    }); 
+    const usuarioAtualizado = await resposta.json();
+    setUsuarios(
+      usuarios.map((usuario) =>
+        usuario.id === edicao ? usuarioAtualizado : usuario 
+      ),
+    );
+    setEdicao(null);
+    setName("");
+    setEmail("");
+  }
 
   function CancelarEdicao() {
     if (edicao) {
@@ -95,12 +115,20 @@ function Produtos() {
     };
   }
 
-  function DeletarUsuario(id: number) {
+  /* function DeletarUsuario(id: number) {
     const usuariosAtualizados = usuarios.filter(
       (usuario) => usuario.id !== id
     );
     setUsuarios(usuariosAtualizados);
-  }
+  } */
+
+    async function DeletarUsuario(id: number) {
+      await fetch(
+        `https://jsonplaceholder.typicode.com/users?${id}`, {
+          method: "DELETE"
+        }),
+        setUsuarios(usuarios.filter((usuario) => usuario.id !== id));
+    }
 
   return (
     <main className="mx-auto max-w-5xl p-6">
