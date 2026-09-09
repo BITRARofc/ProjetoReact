@@ -1,13 +1,26 @@
 import express, { type Express, type Request, type Response } from 'express';
+import cors from "cors";
+import dotenv from "dotenv";
+import morgan from "morgan";
+import helmet from "helmet";
+
+dotenv.config();
 
 const app: Express = express();
-const port = 3000;
+app.use(cors());
+app.use(express.json());
+const port = process.env.PORT || 3000;
+
+app.use(morgan("dev"));
+
+app.use(helmet());
+
 
 const contatos = [
-    { id: 1, nome: "Mauro", email: "canivetada@teste.com"},
-    { id: 2, nome: "Samuel", email: "autismo@teste.com"},
-    { id: 3, nome: "Yan", email: "vicio@teste.com"},
-    { id: 4, nome: "Marcos", email: "baixarias@teste.com"}
+    { id: 1, name: "Mauro", email: "canivetada@teste.com"},
+    { id: 2, name: "Samuel", email: "autismo@teste.com"},
+    { id: 3, name: "Yan", email: "vicio@teste.com"},
+    { id: 4, name: "Marcos", email: "baixarias@teste.com"},
 ]
 
 app.get('/', (req: Request, res: Response) => {
@@ -17,6 +30,46 @@ app.get('/', (req: Request, res: Response) => {
 app.get('/api/contatos', (req: Request, res: Response) => {
   res.json(contatos);
 });
+
+app.post('/api/contatos', (req: Request, res: Response) => {
+  const {name, email} = req.body;
+
+  if (!name || !email) {
+    return res.status(400).json({ erro: "Nome e Email são obrigatórios" })
+  }
+
+  const novoId = contatos.length > 0 ? Math.max(...contatos.map(c => c.id)) + 1 : 1;
+
+  const novoContato = {id: novoId, name, email};
+  contatos.push(novoContato);
+
+  return res.status(201).json(novoContato);
+});
+
+app.put("/api/contatos/:id", (req: Request, res: Response)=> {
+  const id = Number(req.params.id);
+  const {name, email} = req.body;
+
+  const index = contatos.findIndex(c => c.id === id);
+
+  const contatoExistente = contatos[index];
+
+  if (!contatoExistente) {
+    return res.status(404).json({ erro: "Contato não encontrado"})
+  }
+  
+  const contatoAtualizado = {
+    ...contatoExistente,
+    name: name ?? contatoExistente.name,
+    email: email ?? contatoExistente.email,
+  };
+  
+  contatos[index] = contatoAtualizado;
+
+  res.json(contatoAtualizado);
+});
+
+
 
 app.listen(port, () => {
   console.log(`Servidor iniciado em http://localhost:${port}`);
