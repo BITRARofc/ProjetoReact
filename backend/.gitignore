@@ -46,3 +46,4 @@ coverage/
 .eslintcache
  
 /generated/prisma
+/generated/prisma
